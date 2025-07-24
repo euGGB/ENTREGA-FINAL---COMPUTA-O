@@ -1,12 +1,9 @@
-#TRABALHO FINAL.ipynb
-
-from itertools import combinations
-import sys
-import json
-from datetime import datetime
-from collections import defaultdict
-import os
-
+#___BIBLIOTECAS___________________________________________________________________#
+import json  # Manipula arquivos JSON (gravação e leitura do histórico)           #
+from datetime import datetime # Para registrar a data e hora dos orçamentos       #
+from collections import defaultdict # Cria dicionários com listas automaticamente #
+import os # Verifica existência de arquivos e manipula arquivos no sistema        #
+#_________________________________________________________________________________#
 
 class ItemSeguranca:
     def __init__(self, codigo, nome, categoria, preco, especificacoes, prioridade=1):
@@ -16,60 +13,60 @@ class ItemSeguranca:
         self.preco = preco
         self.especificacoes = especificacoes
         self.prioridade = prioridade  # 1 a 5 (5 é mais prioritário)
-
+#_______________________________________________________________________________________________________
     def __str__(self):
-        return f"{self.codigo}: {self.nome} - R${self.preco:.2f} (Prioridade: {self.prioridade})"
-
+        return f"{self.codigo}: {self.nome} - R${self.preco:.2f} [ESPECIFICAÇÕES]-> {self.especificacoes} "
+#_______________________________________________________________________________________________________
     def info_completa(self):
         return (f"{self.codigo}: {self.nome} ({self.categoria})\n"
                 f"Preço: R${self.preco:.2f}\n"
                 f"Especificações: {self.especificacoes}\n"
                 f"Prioridade: {self.prioridade}/5")
 
-
+#_______________________________________________________________________________________________________
 class Orcamento:
     def __init__(self, itens):
         self.data = datetime.now()
         self.itens = [(item, qtd) for item, qtd in itens.items()]
         self.total = sum(item.preco * qtd for item, qtd in self.itens)
 
-
+#_______________________________________________________________________________________________________
 class Historico:
     def __init__(self):
-        self.orcamentos = []
-        self.arquivo = "historico_orcamentos.json"
-        self._carregar_historico()
-
+        self.orcamentos = [] # Lista de orçamentos armazenados
+        self.arquivo = "historico_orcamentos.json" # Caminho do arquivo
+        self._carregar_historico()  # Carrega o histórico existente ao iniciar
+#_______________________________________________________________________________________________________
     def _carregar_historico(self):
         if os.path.exists(self.arquivo):
-            with open(self.arquivo, 'r') as f:
+            with open(self.arquivo, 'r') as f: # Verifica se há o arquivo .json no sistema
                 dados = json.load(f)
-                for orc in dados:
+                for orc in dados: # Lê o arquivo Jonson e carrega como lista de dicionários 
                     itens = [(ItemSeguranca(**item['item']), item['qtd']) for item in orc['itens']]
-                    novo_orc = Orcamento({})
+                    novo_orc = Orcamento({}) # Cria e armazena os objetovos do Orçamento como os dados lidos 
                     novo_orc.itens = itens
                     novo_orc.total = orc['total']
                     novo_orc.data = datetime.strptime(orc['data'], '%Y-%m-%d %H:%M:%S.%f')
                     self.orcamentos.append(novo_orc)
-
+#_______________________________________________________________________________________________________
     def _salvar_historico(self):
         dados = []
-        for orc in self.orcamentos:
+        for orc in self.orcamentos: # Prepara os dados para salvar em Jonson
             itens = [{'item': {'codigo': item.codigo, 'nome': item.nome, 'categoria': item.categoria,
                                'preco': item.preco, 'especificacoes': item.especificacoes,
                                'prioridade': item.prioridade}, 'qtd': qtd} for item, qtd in orc.itens]
-            dados.append({'data': str(orc.data), 'itens': itens, 'total': orc.total})
+            dados.append({'data': str(orc.data), 'itens': itens, 'total': orc.total}) #Pega todos os dados do obajeto para armazenar 
 
         with open(self.arquivo, 'w') as f:
-            json.dump(dados, f)
-
-    def adicionar_orcamento(self, orcamento):
+            json.dump(dados, f) # Salva o Jonson 
+#_______________________________________________________________________________________________________
+    def adicionar_orcamento(self, orcamento): # Adiciona cada orçamento inserido e armazena 
         self.orcamentos.append(orcamento)
         self._salvar_historico()
-
-    def listar_orcamentos(self):
+#_______________________________________________________________________________________________________
+    def listar_orcamentos(self): # Retorna a lista de orçamentos de forma ordenada por data 
         return sorted(self.orcamentos, key=lambda x: x.data, reverse=True)
-
+#_______________________________________________________________________________________________________
     def comparar_orcamentos(self, idx1, idx2):
         try:
             orc1 = self.orcamentos[idx1]
@@ -95,7 +92,7 @@ class Historico:
         except IndexError:
             print("Índice inválido no histórico")
 
-
+#_______________________________________________________________________________________________________
 class SistemaSeguranca:
     def __init__(self):
         self.itens = self._carregar_itens()
@@ -103,8 +100,8 @@ class SistemaSeguranca:
         self.historico = Historico()
         self.categorias_selecionadas = []
         self.orcamento_cliente = 0
-
-    def _carregar_itens(self):
+#_______________________________________________________________________________________________________
+    def _carregar_itens(self):# Retorna todos os itens de segurança listados no programa para serem usados
         """Carrega todos os itens de segurança disponíveis"""
         return [
             # Câmeras -> Tipo A
@@ -137,8 +134,8 @@ class SistemaSeguranca:
             ItemSeguranca("ACES2", "Interfone Inteligente", "Acessório", 399.90, "Tela 7'', comunicação bidirecional", 3),
         ]
 
-    def apresentacao_da_empresa(self):
-        """Apresentação em destaque da empresa CALCULANDO COM SEGURANÇA"""
+#_______________________________________________________________________________________________________
+    def apresentacao_da_empresa(self):# APRESENTAÇÃO DA EMPRESA E OBJETIVOS
         print("=" * 60)
         print("               👨‍🚒BEM-VINDO À CALCULANDO COM SEGURANÇA👩‍🚒")
         print("=" * 60)
@@ -148,21 +145,21 @@ class SistemaSeguranca:
         print("🛠️  Vamos juntos encontrar a melhor solução para sua moradia!")
         print("=" * 60)
 
-    def mostrar_menu_principal(self):
-        """Exibe o menu principal do sistema"""
+#_______________________________________________________________________________________________________
+    def mostrar_menu_principal(self):# OPÇÕES DE AÇÕES DO SISTEMA POR NÚMERO
         print("\n" + "="*50)
-        print("SISTEMA DE ORÇAMENTO DE SEGURANÇA RESIDENCIAL")
+        print("SISTEMA DE ORÇAMENTO DE SEGURANÇA RESIDENCIAL👌")
         print("="*50)
-        print("\n[1]. Ver todos os itens disponíveis")
-        print("[2]. Selecionar categoria dos itens")
-        print("[3]. Definir orçamento e ver itens dentro do valor")
-        print("[4]. Gerar orçamento com itens selecionados")
-        print("[5]. Consultar histórico")
-        print("[6]. Comparar orçamentos")
-        print("[7]. Sair")
+        print("\n[1]. Ver todos os itens disponíveis🧾")
+        print("[2]. Selecionar categoria dos itens🔖")
+        print("[3]. Definir orçamento e ver itens dentro do valor💸")
+        print("[4]. Gerar orçamento com itens selecionados🛒")
+        print("[5]. Consultar histórico🔙")
+        print("[6]. Comparar orçamentos💱")
+        print("[7]. Sair💨")
 
-    def mostrar_todos_itens(self):
-        """Mostra todos os itens disponíveis organizados por categoria"""
+#_______________________________________________________________________________________________________
+    def mostrar_todos_itens(self):#[1] = VER TODOS OS INTENS DISPONÍVEIS
         print("\nITENS DISPONÍVEIS:")
 
         itens_por_categoria = defaultdict(list)
@@ -174,8 +171,8 @@ class SistemaSeguranca:
             for item in sorted(itens, key=lambda x: x.codigo, reverse=True):
                 print(f"  {item}")
 
-    def mostrar_itens_dentro_orcamento(self):
-        """Mostra apenas os itens que cabem no orçamento do cliente"""
+#_______________________________________________________________________________________________________
+    def mostrar_itens_dentro_orcamento(self):#[3] = MOSTRA OS ITENS DENTRO DO ORÇAMENTO OBTIDO
         if self.orcamento_cliente <= 0:
             print("\nPor favor, defina primeiro um orçamento válido (opção 3 no menu)")
             return
@@ -198,8 +195,8 @@ class SistemaSeguranca:
             for item in sorted(itens, key=lambda x: (-x.prioridade, x.preco)):
                 print(f"  {item}")
 
-    def definir_orcamento_cliente(self):
-        """Obtém e define o valor máximo que o cliente deseja investir"""
+#_______________________________________________________________________________________________________
+    def definir_orcamento_cliente(self):#[3] = DEFINE O ORÇAMENTO A SER USADO
         while True:
             preco_input = input("\nInforme o valor que pretende investir em segurança: R$ ")
             preco_input = preco_input.replace(',', '.').replace(' ', '')
@@ -217,8 +214,8 @@ class SistemaSeguranca:
             except ValueError:
                 print("Por favor, insira um valor numérico válido.")
 
-    def selecionar_categorias(self):
-        """Permite selecionar múltiplas categorias"""
+#_______________________________________________________________________________________________________
+    def selecionar_categorias(self):# [2] =  SELECIONA CATEGORIAS ESPECIFICAS DEFINIDAS
         print("\nCATEGORIAS DISPONÍVEIS:")
         for i, categoria in enumerate(self.categorias, 1):
             print(f"{i}. {categoria}")
@@ -241,8 +238,8 @@ class SistemaSeguranca:
         except ValueError:
             print("Entrada inválida. Use números separados por vírgula.")
 
-    def mostrar_itens_categorias_selecionadas(self):
-        """Mostra itens apenas das categorias selecionadas"""
+#_______________________________________________________________________________________________________
+    def mostrar_itens_categorias_selecionadas(self):#[2] = MOSTRA OS ITENS DAS CATEGORIAS ESPECIFICAS
         if not self.categorias_selecionadas:
             print("Nenhuma categoria selecionada. Mostrando todos os itens.")
             self.mostrar_todos_itens()
@@ -255,8 +252,8 @@ class SistemaSeguranca:
             for item in sorted(itens_cat, key=lambda x: (-x.prioridade, x.preco)):
                 print(f"  {item}")
 
-    def selecionar_quantidades(self):
-        """Permite ao usuário selecionar itens e quantidades dentro do orçamento"""
+#_______________________________________________________________________________________________________
+    def selecionar_quantidades(self):#[4] = PERMITE SELECIONAR A QUATIDADE DE CERTOS ITENS DENTRO DO ORÇAMENTO
         if self.orcamento_cliente <= 0:
             print("\nPor favor, defina primeiro um orçamento (opção 3 no menu)")
             return {}
@@ -307,8 +304,8 @@ class SistemaSeguranca:
 
         return selecao
 
-    def gerar_orcamento(self, itens):
-        """Gera e salva um novo orçamento"""
+#_______________________________________________________________________________________________________
+    def gerar_orcamento(self, itens):#[4] = # GERA O ORÇAMENTO A SER USANDO E SALVA 
         if not itens:
             print("\nNenhum item selecionado para o orçamento.")
             return
@@ -330,8 +327,8 @@ class SistemaSeguranca:
 
         self.forma_pagamento(orcamento.total)
 
-    def consultar_historico(self):
-        """Mostra todos os orçamentos no histórico"""
+#_______________________________________________________________________________________________________
+    def consultar_historico(self):#[5] MOSTRA TODOS OS ORÇAMENTOS NO HISTÓRICO
         historico = self.historico.listar_orcamentos()
 
         if not historico:
@@ -345,8 +342,8 @@ class SistemaSeguranca:
                 print(f"  {qtd}x {item.nome}")
             print(f"  TOTAL: R${orcamento.total:.2f}")
 
-    def comparar_orcamentos(self):
-        """Compara dois orçamentos do histórico"""
+#_______________________________________________________________________________________________________
+    def comparar_orcamentos(self):#[6] = COMPARA OS ULTIMOS DOIS ORÇAMENTOS DO HISTÓRICO 
         historico = self.historico.listar_orcamentos()
 
         if len(historico) < 2:
@@ -362,8 +359,8 @@ class SistemaSeguranca:
         except ValueError:
             print("Digite números válidos")
 
-    def forma_pagamento(self, total):
-        """Pergunta a forma de pagamento desejada"""
+#_______________________________________________________________________________________________________
+    def forma_pagamento(self, total):#[4] = PERGUNTA A FORMA DE PAGAMENTO DESEJADAS
         print("\nBem-vindo ao sistema de pagamento!")
         print("========================")
         print("      [1] - CRÉDITO       ")
@@ -388,8 +385,8 @@ class SistemaSeguranca:
                 else:
                  print("Forma de pagamento não reconhecida.")
 
-    def calcular_parcelas(self, total):
-        """Calcula parcelamento do valor total"""
+#_______________________________________________________________________________________________________
+    def calcular_parcelas(self, total):#[4] = CALCULA AS PARCELAS QUANDO FOR CRÉDITO 
         while True:
             parcelas = input("Deseja parcelar em quantas vezes? (até 3x): ").strip()
             if parcelas in ["1", "2", "3"]:
@@ -400,8 +397,8 @@ class SistemaSeguranca:
             else:
                 print("Número de parcelas inválido. Máximo permitido é 3x.")
 
-    def dividir_pagamento(self, total):
-        """Permite dividir o pagamento entre múltiplas formas"""
+#_______________________________________________________________________________________________________
+    def dividir_pagamento(self, total):#[4] = DIVIDE O PAGAMENTO EM MULTIPLAS FORMAS 
         print("\nVocê escolheu combinar formas de pagamento (Ex: crédito e débito)")
         while True:
             try:
@@ -424,47 +421,48 @@ class SistemaSeguranca:
             except ValueError:
                 print("Entrada inválida. Use números.")
 
-    def executar(self):
+#====================================================================================================================
+    def executar(self):# EXECUÇÃO DO FLUxO PRINCIPAL DO SISTEMA
         """Executa o fluxo principal do sistema"""
         self.apresentacao_da_empresa()
         while True:
+          while True:
             self.mostrar_menu_principal()
             opcao = input("\nEscolha uma opção numérica: ")
 
             if opcao == '1':
                 self.mostrar_todos_itens()
                 input("\nPressione Enter para continuar...")
-
+                break
             elif opcao == '2':
                 self.selecionar_categorias()
                 self.mostrar_itens_categorias_selecionadas()
                 input("\nPressione Enter para continuar...")
-
+                break
             elif opcao == '3':
                 self.definir_orcamento_cliente()
                 input("\nPressione Enter para continuar...")
-
+                break
             elif opcao == '4':
                 selecao = self.selecionar_quantidades()
                 if selecao:
                     self.gerar_orcamento(selecao)
                 input("\nPressione Enter para continuar...")
-
+                break
             elif opcao == "5":
                 self.consultar_historico()
                 input("\nPressione Enter para continuar...")
-
+                break
             elif opcao == "6":
                 self.comparar_orcamentos()
                 input("\nPressione Enter para continuar...")
-
-            elif opcao == "7":
-                print("\nSaindo do sistema...")
                 break
-
+            elif opcao == "7" or opcao == "sair":
+                print("\nSaindo do sistema...")
+                return
             else:
-                print("Opção inválida")
-                input("\nPressione Enter para continuar...")
+                print("Opção inválida, tente novamente ")
+                continue
 
 
 if __name__ == "__main__":
